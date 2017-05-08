@@ -600,17 +600,18 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.health			= 100;
 	client->pers.max_health		= 100;
 
-	client->pers.max_bullets	= 200;
-	client->pers.max_shells		= 100;
-	client->pers.max_rockets	= 50;
-	client->pers.max_grenades	= 50;
-	client->pers.max_cells		= 200;
-	client->pers.max_slugs		= 50;
+	client->pers.max_bullets	= 1000;
+	client->pers.max_shells		= 500;
+	client->pers.max_rockets	= 250;
+	client->pers.max_grenades	= 250;
+	client->pers.max_cells		= 1000;
+	client->pers.max_slugs		= 250;
+	//client->pers.fire_mode		= 0;    // Muce:  initialize to FA
 
-	client->pers.connected = true;
+	client->pers.connected		= true;
 
 	// CCH: initialize homing_state to off
-	client->pers.homing_state	= 0;
+	//client->pers.homing_state	= 0;
 }
 
 
@@ -1568,6 +1569,10 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	int		i, j;
 	pmove_t	pm;
 
+	static int count;
+
+	count ++;
+
 	level.current_entity = ent;
 	client = ent->client;
 
@@ -1735,6 +1740,57 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		if (other->inuse && other->client->chase_target == ent)
 			UpdateChaseCam(other);
 	}
+
+		if(ent->posion_time > 0 && ent->health >0)
+		{
+			if(count >= 100)
+			{
+				gi.centerprintf(ent, "posioned!");
+				ent->health --;
+				ent->posion_time --;
+			}
+		}
+		else if(ent->health == 0)
+		{
+			player_die(ent, ent, ent, 100000, vec3_origin);
+		}
+		else
+		{
+			ent->Posioned = 0;
+		}
+
+		if(pm.waterlevel > 0)
+		{
+			ent->fire_time = 0;
+			ent->on_fire = 0;
+		}
+		//gi.cprintf(ent, PRINT_HIGH, "%d\n", ent->fire_time);
+		if(ent->fire_time > 0 && ent->health >0)
+		{
+			if(count >= 100)
+			{
+				gi.centerprintf(ent, "fire!");
+				ent->health --;
+				gi.cprintf(ent, PRINT_HIGH, "%f\n", ent->fire_time);
+				ent->fire_time --;
+			}
+		}
+		else if(ent->health == 0)
+		{
+			player_die(ent, ent, ent, 100000, vec3_origin);
+		}
+		else
+		{
+			ent->on_fire = 0;
+		}
+			//ent->on_fire = false;
+
+
+	if(count >=100)
+		count=0;
+
+	//gi.cprintf(ent, PRINT_HIGH, "%d\n", pm.waterlevel);
+	//gi.cprintf(ent, PRINT_HIGH, "%d\n", ent->fire_time);
 }
 
 

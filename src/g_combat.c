@@ -83,7 +83,7 @@ void Killed (edict_t *targ, edict_t *inflictor, edict_t *attacker, int damage, v
 		if (!(targ->monsterinfo.aiflags & AI_GOOD_GUY))
 		{
 			level.killed_monsters++;
-			attacker->client->skillpoints++;
+			attacker->client->pers.skillpoints++;
 			gi.cprintf (attacker, PRINT_HIGH, "skillpoint!\n");
 			if (coop->value && attacker->client)
 				attacker->client->resp.score++;

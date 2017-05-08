@@ -810,7 +810,37 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster (ent, start, forward, damage, 100, effect, hyper);
+	fire_blaster (ent, start, forward, damage, 2000, effect, hyper);
+
+	// send muzzle flash
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	if (hyper)
+		gi.WriteByte (MZ_HYPERBLASTER | is_silenced);
+	else
+		gi.WriteByte (MZ_BLASTER | is_silenced);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+	PlayerNoise(ent, start, PNOISE_WEAPON);
+}
+
+void Posion_blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
+{
+	vec3_t	forward, right;
+	vec3_t	start;
+	vec3_t	offset;
+
+	if (is_quad)
+		damage *= 4;
+	AngleVectors (ent->client->v_angle, forward, right, NULL);
+	VectorSet(offset, 24, 8, ent->viewheight-8);
+	VectorAdd (offset, g_offset, offset);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+	VectorScale (forward, -2, ent->client->kick_origin);
+	ent->client->kick_angles[0] = -1;
+
+	fire_posion_blaster (ent, start, forward, damage, 2000, effect, hyper);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -884,8 +914,8 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 			if (deathmatch->value)
 				damage = 15;
 			else
-				damage = 20;
-			Blaster_Fire (ent, offset, damage, true, effect);
+				damage = 0;
+			Posion_blaster_Fire (ent, offset, damage, true, effect);
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 				ent->client->pers.inventory[ent->client->ammo_index]--;
 
@@ -941,18 +971,20 @@ void Machinegun_Fire (edict_t *ent)
 	int			kick = 2;
 	vec3_t		offset;
 
-	if (!(ent->client->buttons & BUTTON_ATTACK))
+	if (!(ent->client->buttons & BUTTON_ATTACK) && ( (ent->client->burstfire_count > 2) || (!ent->client->burstfire_count ) ) )
 	{
 		ent->client->machinegun_shots = 0;
+		ent->client->burstfire_count=0;
 		ent->client->ps.gunframe++;
 		return;
 	}
-
-	if (ent->client->ps.gunframe == 5)
-		ent->client->ps.gunframe = 4;
-	else
-		ent->client->ps.gunframe = 5;
-
+	if (ent->client->burstfire_count < 3)
+	{
+		if (ent->client->ps.gunframe == 5)
+			ent->client->ps.gunframe = 4;
+		else
+			ent->client->ps.gunframe = 5;
+	}
 	if (ent->client->pers.inventory[ent->client->ammo_index] < 1)
 	{
 		ent->client->ps.gunframe = 6;
@@ -962,6 +994,7 @@ void Machinegun_Fire (edict_t *ent)
 			ent->pain_debounce_time = level.time + 1;
 		}
 		NoAmmoWeaponChange (ent);
+		ent->client->burstfire_count=0;
 		return;
 	}
 
@@ -980,7 +1013,7 @@ void Machinegun_Fire (edict_t *ent)
 	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
 
 	// raise the gun as it is firing
-	if (!deathmatch->value)
+	if (!deathmatch->value && !ent->client->pers.fire_mode)
 	{
 		ent->client->machinegun_shots++;
 		if (ent->client->machinegun_shots > 9)
@@ -992,14 +1025,51 @@ void Machinegun_Fire (edict_t *ent)
 	AngleVectors (angles, forward, right, NULL);
 	VectorSet(offset, 0, 8, ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+/*
 	fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
 
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
 	gi.WriteByte (MZ_MACHINEGUN | is_silenced);
 	gi.multicast (ent->s.origin, MULTICAST_PVS);
-
+*/
 	PlayerNoise(ent, start, PNOISE_WEAPON);
+
+
+	switch (ent->client->pers.mg_mode)
+        {
+        // Fire Burst Fire
+        case 1:
+                ent->client->burstfire_count++;
+                if (ent->client->burstfire_count < 4)
+                {
+fire_bullet (ent, start, forward, damage*2, kick/2, DEFAULT_BULLET_HSPREAD/2, DEFAULT_BULLET_VSPREAD/2, MOD_MACHINEGUN);
+                gi.WriteByte (svc_muzzleflash);
+                gi.WriteShort (ent-g_edicts);
+                gi.WriteByte (MZ_MACHINEGUN | is_silenced);
+                gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+                PlayerNoise(ent, start, PNOISE_WEAPON);
+
+ent->client->pers.inventory[ent->client->ammo_index] -= ent->client->pers.weapon->quantity;
+                }       
+                else if (ent->client->burstfire_count > 6)
+                        ent->client->burstfire_count=0;
+                break;
+        // Fire Fully Automatic
+        case 0:
+        default:
+fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+                gi.WriteByte (svc_muzzleflash);
+                gi.WriteShort (ent-g_edicts);
+                gi.WriteByte (MZ_MACHINEGUN | is_silenced);
+                gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+                PlayerNoise(ent, start, PNOISE_WEAPON);
+
+ent->client->pers.inventory[ent->client->ammo_index] -= ent->client->pers.weapon->quantity;
+                break;
+        }
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 		ent->client->pers.inventory[ent->client->ammo_index]--;
@@ -1128,13 +1198,13 @@ void Chaingun_Fire (edict_t *ent)
 		u = crandom()*4;
 		VectorSet(offset, 0, r, u + ent->viewheight-8);
 		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-		if(ent->client->shotgunchaingun == 0)
+		if(ent->client->pers.shotgunchaingun == 0)
 		{
 			fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
 		}
 		else
 		{
-			fire_shotgun (ent, start, forward, 1, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+			fire_shotgun (ent, start, forward, 1, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_CHAINGUN);
 		}
 	}
 
@@ -1173,7 +1243,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		offset;
-	int			damage = 4;
+	int			damage = 0;
 	int			kick = 8;
 
 	if (ent->client->ps.gunframe == 9)
@@ -1195,11 +1265,14 @@ void weapon_shotgun_fire (edict_t *ent)
 		damage *= 4;
 		kick *= 4;
 	}
-
+	/*
 	if (deathmatch->value)
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_DEATHMATCH_SHOTGUN_COUNT, MOD_SHOTGUN);
-	else
-		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+	else if(ent->client->pers.shotgun_mode = 0)
+		fire_posion_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+	else */
+		fire_posion_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -1418,4 +1491,3 @@ void Weapon_BFG (edict_t *ent)
 }
 
 
-//======================================================================

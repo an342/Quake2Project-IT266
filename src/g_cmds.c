@@ -766,6 +766,8 @@ Cmd_Homing_f
 CCH: whole new function for adjusting homing missile state
 =================
 */
+
+/*
 void Cmd_Homing_f (edict_t *ent)
 {
 	int		i;
@@ -784,7 +786,8 @@ void Cmd_Homing_f (edict_t *ent)
 		ent->client->pers.homing_state = 1;
 		break;
 	}
-}
+}*/
+
 /*
 =================
 Cmd_skillpoint_f
@@ -793,24 +796,36 @@ give a skill point
 */
 void Cmd_skillpoint_f(edict_t *ent)
 {
-	char *i;
-	//int skp = ent->skillpoints;
-
+	char	*i;
+	//char	*a;
+	
+	//int		skp = ent->client->pers.skillpoints;
+	//sprintf(a,"%d", ent->client->pers.skillpoints);
 	i = (gi.argv(1));
+	
 
 	if(Q_stricmp(i, "add") == 0)
 	{
-		gi.cprintf (ent, PRINT_HIGH, "Skillpoint added \n");
-		ent->client->skillpoints = ent->client->skillpoints + 1;
+		ent->client->pers.skillpoints = ent->client->pers.skillpoints + 1;
+		//sprintf(a,"%d", ent->client->pers.skillpoints);
+		gi.cprintf (ent, PRINT_HIGH, "Skillpoint added \nnew total: %d \n", ent->client->pers.skillpoints);
+		//gi.cprintf (ent, PRINT_HIGH, a);
+		//gi.cprintf (ent, PRINT_HIGH, "\n");
 	}
 	else if (Q_stricmp(i, "remove") == 0)
 	{
-		ent->client->skillpoints = ent->client->skillpoints - 1;
-		gi.cprintf (ent, PRINT_HIGH, "Skillpoint removed\n");
+		ent->client->pers.skillpoints = ent->client->pers.skillpoints - 1;
+		//sprintf(a,"%d", ent->client->pers.skillpoints);
+		gi.cprintf (ent, PRINT_HIGH, "Skillpoint removed\nnew total: %d \n", ent->client->pers.skillpoints);
+		//gi.cprintf (ent, PRINT_HIGH, a);
+		//gi.cprintf (ent, PRINT_HIGH, "\n");
+
 	}
 	else
 	{
-		gi.cprintf (ent, PRINT_HIGH, "Command not reconized use: \n 'add' to add skillpoint \n 'remove' to remove skillpoint");
+		gi.cprintf (ent, PRINT_HIGH, "Skillpoints: %d \n", ent->client->pers.skillpoints);
+		//gi.cprintf (ent, PRINT_HIGH, a);
+		gi.cprintf (ent, PRINT_HIGH, "'add' to add skillpoint \n'remove' to remove skillpoint\n");
 	}
 }
 
@@ -821,39 +836,79 @@ void Cmd_UpgradeWpn_f(edict_t *ent)
 	name = gi.args();
 	if(Q_stricmp(name, "rockets") == 0)
 	{
-		if (ent->client->skillpoints >= 1 && ent->client->homing_rockets != 1)
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.homing_rockets != 1)
 		{
-			ent->client->homing_rockets = 1;
-			ent->client->skillpoints = ent->client->skillpoints -1;
+			ent->client->pers.homing_rockets = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
 			gi.cprintf (ent, PRINT_HIGH, "Seeker Rockets Engaged!\n");
 		}
 	
-		else if (ent->client->skillpoints < 1&&ent->client->homing_rockets != 1)
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.homing_rockets != 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
-		else if ( ent->client->homing_rockets = 1)
+		else if ( ent->client->pers.homing_rockets = 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
 	}
-	else 	if(Q_stricmp(name, "chaingun") == 0)
+	else if(Q_stricmp(name, "chaingun") == 0)
 	{
-		if (ent->client->skillpoints >= 1 && ent->client->shotgunchaingun!= 1)
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.shotgunchaingun!= 1)
 		{
-			ent->client->shotgunchaingun = 1;
-			ent->client->skillpoints = ent->client->skillpoints -1;
+			ent->client->pers.shotgunchaingun = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
 			gi.cprintf (ent, PRINT_HIGH, "Shells Spinning UP!\n");
 		}
 	
-		else if (ent->client->skillpoints < 1&&ent->client->shotgunchaingun != 1)
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.shotgunchaingun != 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
-		else if ( ent->client->shotgunchaingun = 1)
+		else if ( ent->client->pers.shotgunchaingun = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "MG") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.mg_mode!= 1)
+		{
+			ent->client->pers.mg_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "Burst fire selected!\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.mg_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.mg_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "Shotgun") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.shotgun_mode!= 1)
+		{
+			ent->client->pers.shotgun_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "Venome added!\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.shotgun_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.shotgun_mode = 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
@@ -863,8 +918,6 @@ void Cmd_UpgradeWpn_f(edict_t *ent)
 	{
 		gi.cprintf (ent, PRINT_HIGH, "Weapon not added try again \n");
 	}
-		
-	
 
 }
 /*
@@ -990,6 +1043,34 @@ void Cmd_PlayerList_f(edict_t *ent)
 
 /*
 =================
+Cmd_FireMode_f
+MUCE: new function for adjusting firing mode
+=================
+*/
+void Cmd_FireMode_f (edict_t *ent)
+{
+	int i;
+	i=ent->client->pers.fire_mode;
+	
+	switch (i)
+	{
+		case 0:
+			ent->client->pers.fire_mode=1;
+			gi.cprintf(ent,PRINT_HIGH,"Burst Fire Mode\n");
+			break;
+		case 1:
+			default:
+			ent->client->burstfire_count=0;
+			ent->client->pers.fire_mode=0;
+			gi.cprintf(ent,PRINT_HIGH,"Fully Automatic Mode\n");
+			break;
+	}
+}
+
+
+
+/*
+=================
 ClientCommand
 =================
 */
@@ -1073,9 +1154,7 @@ void ClientCommand (edict_t *ent)
 		Cmd_PutAway_f (ent);
 	else if (Q_stricmp (cmd, "wave") == 0)
 		Cmd_Wave_f (ent);
-	// CCH: new 'homing' command
-	else if (Q_stricmp (cmd, "homing") == 0)
-		Cmd_Homing_f (ent);
+
 	//new 'skillpoints' cmd
 	else if (Q_stricmp (cmd, "sklpts") == 0)
 		Cmd_skillpoint_f(ent);
@@ -1083,6 +1162,8 @@ void ClientCommand (edict_t *ent)
 		Cmd_UpgradeWpn_f(ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
+	else if (Q_stricmp (cmd, "firemode") == 0)
+		Cmd_FireMode_f (ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

@@ -202,11 +202,12 @@ Auto pitching on slopes?
 */
 void SV_CalcViewOffset (edict_t *ent)
 {
-	float		*angles;
 	float		bob;
+	float		*angles;
 	float		ratio;
 	float		delta;
 	vec3_t		v;
+
 
 
 //===================================
@@ -269,6 +270,8 @@ void SV_CalcViewOffset (edict_t *ent)
 			delta = -delta;
 		angles[ROLL] += delta;
 	}
+
+	
 
 //===================================
 

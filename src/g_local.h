@@ -716,6 +716,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick);
 void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius);
 
+
 //
 // g_ptrail.c
 //
@@ -846,8 +847,18 @@ typedef struct
 	qboolean	spectator;			// client is a spectator
 
 	// CCH: new persistant data
-	qboolean	homing_state;	// are homing missiles activated
+	qboolean	homing_state;		// are homing missiles activated
 
+    qboolean    fire_mode;			// Muce:  0 for FA and 1 for BF
+
+	int			skillpoints;		//skillpoints total
+	qboolean	homing_rockets;		//0 = normal, 1 = homing
+	qboolean	shotgunchaingun;	//0 = normal, 1 = shotgun
+	qboolean	mg_mode;			//0 = normal, 1 = burst
+	qboolean	shotgun_mode;		//0 = normal, 1 = stun,
+	qboolean	super_shotgun_mode;	//0 = normal, 1 = fire bullets
+	qboolean	grenade_type;		//0 = normal, 1 = slow grenade
+	
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns
@@ -861,7 +872,7 @@ typedef struct
 	qboolean	spectator;			// client is a spectator
 } client_respawn_t;
 
-// this structure is cleared on each PutClientInServer(),
+// this structure is cleared on each PutClientInServer(),touch_item
 // except for 'client->pers'
 struct gclient_s
 {
@@ -917,6 +928,7 @@ struct gclient_s
 	int			breather_sound;
 
 	int			machinegun_shots;	// for weapon raising
+	int			burstfire_count;
 
 	// animation vars
 	int			anim_end;
@@ -935,6 +947,7 @@ struct gclient_s
 	int			silencer_shots;
 	int			weapon_sound;
 
+
 	float		pickup_msg_time;
 
 	float		flood_locktill;		// locked from talking
@@ -945,9 +958,6 @@ struct gclient_s
 
 	edict_t		*chase_target;		// player we are chasing
 	qboolean	update_chase;		// need to update chase info?
-	int			skillpoints;		//skillpoints total
-	qboolean	homing_rockets;		//homing rockets skillpoints unlock
-	qboolean	shotgunchaingun;
 
 };
 
@@ -1101,7 +1111,17 @@ struct edict_s
 	monsterinfo_t	monsterinfo;
 
 	// GREGG
-	int			homing_lock;    //0 = not locked, 1 = locked
+	int			homing_lock; //0 = not locked, 1 = locked
+
+	//posion variables
+	qboolean	Posioned;
+	float		posion_time;
+
+	//fire variables
+	qboolean	on_fire;
+	float		fire_time;
 	
+	//slow variables
+	float		slow_time;
 };
 
