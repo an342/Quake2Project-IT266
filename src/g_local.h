@@ -708,8 +708,11 @@ qboolean FacingIdeal(edict_t *self);
 void ThrowDebris (edict_t *self, char *modelname, float speed, vec3_t origin);
 qboolean fire_hit (edict_t *self, vec3_t aim, int damage, int kick);
 void fire_bullet (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int mod);
+void fire_posion_bullet (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int mod);
 void fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int mod);
+void fire_posion_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int mod);
 void fire_blaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect, qboolean hyper);
+void fire_posion_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyper);
 void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius);
 void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held);
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
@@ -846,18 +849,21 @@ typedef struct
 
 	qboolean	spectator;			// client is a spectator
 
-	// CCH: new persistant data
-	qboolean	homing_state;		// are homing missiles activated
-
-    qboolean    fire_mode;			// Muce:  0 for FA and 1 for BF
 
 	int			skillpoints;		//skillpoints total
-	qboolean	homing_rockets;		//0 = normal, 1 = homing
-	qboolean	shotgunchaingun;	//0 = normal, 1 = shotgun
+
+	qboolean	blaster_mode;		//0 = normal, 1 = explosive rounds
+	qboolean	shotgun_mode;		//0 = normal, 1 = stun
+	qboolean	super_shotgun_mode;	//0 = normal, 1 = fire
 	qboolean	mg_mode;			//0 = normal, 1 = burst
-	qboolean	shotgun_mode;		//0 = normal, 1 = stun,
-	qboolean	super_shotgun_mode;	//0 = normal, 1 = fire bullets
-	qboolean	grenade_type;		//0 = normal, 1 = slow grenade
+	qboolean	chaingun_mode;		//0 = normal, 1 = shotgun chaingun
+	qboolean	grenade_mode;		//0 = normal, 1 = slow grenade
+	qboolean	rockets_mode;		//0 = normal, 1 = homing
+	qboolean	hyperblaster_mode;	//0 = normal, 1 = posion 
+	qboolean	railgun_mode;		//0 = normal, 1 = life steal
+	qboolean	bfg_mode;			//0 = normal, 1 = slow
+	//qboolean	hand_grenade_mode;	//0 = normal, 1 = heal grenade
+
 	
 } client_persistant_t;
 
@@ -928,6 +934,8 @@ struct gclient_s
 	int			breather_sound;
 
 	int			machinegun_shots;	// for weapon raising
+
+	// Qdevels burst MG tutorial https://www.quakewiki.net/archives/qdevels/quake2/6_1_98.html
 	int			burstfire_count;
 
 	// animation vars
@@ -1110,9 +1118,6 @@ struct edict_s
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
 
-	// GREGG
-	int			homing_lock; //0 = not locked, 1 = locked
-
 	//posion variables
 	qboolean	Posioned;
 	float		posion_time;
@@ -1121,7 +1126,24 @@ struct edict_s
 	qboolean	on_fire;
 	float		fire_time;
 	
-	//slow variables
+	//speed variables
 	float		slow_time;
+	qboolean	slowed;
+
+	//disarm variables
+	float		root_time;
+	qboolean	rooted;
+
+	//healing variables
+	float		healing_time;
+	qboolean	healing;
+
 };
 
+/*
+sources
+// Qdevels burst MG tutorial https://www.quakewiki.net/archives/qdevels/quake2/6_1_98.html
+// Qdevels homing rocket tutorial https://www.quakewiki.net/archives/qdevels/quake2/25_12_97a.html
+// Qdevels player speed tutorial https://www.quakewiki.net/archives/qdevels/quake2/1_5_98.html
+// Qdevels cluster grenades https://www.quakewiki.net/archives/qdevels/quake2/25_12_97f.html (we also did thse in class bit)
+*/

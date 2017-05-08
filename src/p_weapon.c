@@ -705,8 +705,10 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
-
-	fire_grenade (ent, start, forward, damage, 600, 2.5, radius);
+	if(ent->client->pers.grenade_mode ==1)
+		fire_cluster_grenade (ent, start, forward, damage, 600, 2.5, radius);
+	else
+		fire_grenade (ent, start, forward, damage, 600, 2.5, radius);
 
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -810,7 +812,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster (ent, start, forward, damage, 2000, effect, hyper);
+fire_posion_bullet (ent, start, forward, damage, 2, 50, 100, MOD_BLASTER);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -863,6 +865,7 @@ void Weapon_Blaster_Fire (edict_t *ent)
 		damage = 15;
 	else
 		damage = 10;
+
 	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
 	ent->client->ps.gunframe++;
 }
@@ -914,8 +917,13 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 			if (deathmatch->value)
 				damage = 15;
 			else
-				damage = 0;
-			Posion_blaster_Fire (ent, offset, damage, true, effect);
+				damage = 10;
+
+			if(ent->client->pers.hyperblaster_mode == 1)
+			Posion_blaster_Fire (ent, offset, damage/10, true, effect);
+			else
+				Blaster_Fire(ent, offset, damage, true, effect);
+
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 				ent->client->pers.inventory[ent->client->ammo_index]--;
 
@@ -1013,7 +1021,7 @@ void Machinegun_Fire (edict_t *ent)
 	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
 
 	// raise the gun as it is firing
-	if (!deathmatch->value && !ent->client->pers.fire_mode)
+	if (!deathmatch->value && !ent->client->pers.mg_mode)
 	{
 		ent->client->machinegun_shots++;
 		if (ent->client->machinegun_shots > 9)
@@ -1035,7 +1043,7 @@ void Machinegun_Fire (edict_t *ent)
 */
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
-
+		// Qdevels burst MG tutorial
 	switch (ent->client->pers.mg_mode)
         {
         // Fire Burst Fire
@@ -1198,7 +1206,7 @@ void Chaingun_Fire (edict_t *ent)
 		u = crandom()*4;
 		VectorSet(offset, 0, r, u + ent->viewheight-8);
 		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-		if(ent->client->pers.shotgunchaingun == 0)
+		if(ent->client->pers.chaingun_mode == 0)
 		{
 			fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
 		}
@@ -1243,7 +1251,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		offset;
-	int			damage = 0;
+	int			damage = 4;
 	int			kick = 8;
 
 	if (ent->client->ps.gunframe == 9)
@@ -1265,13 +1273,13 @@ void weapon_shotgun_fire (edict_t *ent)
 		damage *= 4;
 		kick *= 4;
 	}
-	/*
+	
 	if (deathmatch->value)
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_DEATHMATCH_SHOTGUN_COUNT, MOD_SHOTGUN);
-	else if(ent->client->pers.shotgun_mode = 0)
-		fire_posion_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
-	else */
-		fire_posion_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+	else if(ent->client->pers.shotgun_mode == 1)
+		fire_posion_shotgun (ent, start, forward, damage/4, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+	else 
+		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
 
 
 	// send muzzle flash
@@ -1302,7 +1310,7 @@ void weapon_supershotgun_fire (edict_t *ent)
 	vec3_t		forward, right;
 	vec3_t		offset;
 	vec3_t		v;
-	int			damage = 6;
+	int			damage = 1;
 	int			kick = 12;
 
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
@@ -1323,11 +1331,22 @@ void weapon_supershotgun_fire (edict_t *ent)
 	v[YAW]   = ent->client->v_angle[YAW] - 5;
 	v[ROLL]  = ent->client->v_angle[ROLL];
 	AngleVectors (v, forward, NULL, NULL);
-	fire_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
-	v[YAW]   = ent->client->v_angle[YAW] + 5;
-	AngleVectors (v, forward, NULL, NULL);
-	fire_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
-
+	
+	if(ent->client->pers.super_shotgun_mode == 0)
+	{
+		fire_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
+		v[YAW]   = ent->client->v_angle[YAW] + 5;
+		AngleVectors (v, forward, NULL, NULL);
+		fire_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
+	
+	}
+	else if(ent->client->pers.super_shotgun_mode== 1)
+	{
+		fire_root_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
+		v[YAW]   = ent->client->v_angle[YAW] + 5;
+		AngleVectors (v, forward, NULL, NULL);
+		fire_root_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
+	}
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -1374,7 +1393,7 @@ void weapon_railgun_fire (edict_t *ent)
 	}
 	else
 	{
-		damage = 150;
+		damage = 1;
 		kick = 250;
 	}
 
@@ -1391,7 +1410,10 @@ void weapon_railgun_fire (edict_t *ent)
 
 	VectorSet(offset, 0, 7,  ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_rail (ent, start, forward, damage, kick);
+	if(ent->client->pers.railgun_mode == 0)
+		fire_rail (ent, start, forward, damage, kick);
+	else
+		fire_vamp_rail (ent, start, forward, damage, kick);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -1472,7 +1494,14 @@ void weapon_bfg_fire (edict_t *ent)
 
 	VectorSet(offset, 8, 8, ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_bfg (ent, start, forward, damage, 400, damage_radius);
+	if(ent->client->pers.bfg_mode == 1)
+	{
+		fire_super_bfg (ent, start, forward, damage, 400, damage_radius);
+		ent->slowed == 1;
+		ent->slow_time = 5;
+	}
+	else
+		fire_bfg (ent, start, forward, damage, 400, damage_radius);
 
 	ent->client->ps.gunframe++;
 

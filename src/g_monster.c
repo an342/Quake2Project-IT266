@@ -21,17 +21,22 @@ void monster_fire_bullet (edict_t *self, vec3_t start, vec3_t dir, int damage, i
 
 void monster_fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int flashtype)
 {
-	fire_posion_shotgun (self, start, aimdir, damage, kick, hspread, vspread, count, MOD_UNKNOWN);
+	if(self->rooted == 0)
+	{
+		fire_posion_shotgun (self, start, aimdir, damage, kick, hspread, vspread, count, MOD_UNKNOWN);
 	//fire_shotgun (self, start, aimdir, damage, kick, hspread, vspread, count, MOD_UNKNOWN);
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }
 
 void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype, int effect)
 {
+	if(self->rooted = 0)
+	{
 	fire_posion_blaster(self, start, dir, damage, speed, effect, false);
 	//fire_blaster(self, start, dir, damage, speed, effect, false);
 
@@ -39,46 +44,59 @@ void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, 
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }	
 
 void monster_fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int flashtype)
 {
+	if(self->rooted = 0)
+	{
 	fire_grenade (self, start, aimdir, damage, speed, 2.5, damage+40);
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }
 
 void monster_fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype)
 {
+	if(self->rooted = 0)
+	{
 	fire_rocket (self, start, dir, damage, speed, damage+20, damage);
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }	
 
 void monster_fire_railgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int flashtype)
 {
+	if(self->rooted = 0)
+	{
 	fire_rail (self, start, aimdir, damage, kick);
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }
 
 void monster_fire_bfg (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int kick, float damage_radius, int flashtype)
 {
+	if(self->rooted = 0)
+	{
 	fire_bfg (self, start, aimdir, damage, speed, damage_radius);
 
 	gi.WriteByte (svc_muzzleflash2);
 	gi.WriteShort (self - g_edicts);
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
+	}
 }
 
 
@@ -396,6 +414,7 @@ void M_MoveFrame (edict_t *self)
 
 	if (move->frame[index].thinkfunc)
 		move->frame[index].thinkfunc (self);
+	
 }
 
 
@@ -405,7 +424,10 @@ void monster_think (edict_t *self)
 
 	count ++;
 	//gi.bprintf(PRINT_MEDIUM, "%d\n", count);
-	M_MoveFrame (self);
+
+	if(self->rooted == 0)
+		M_MoveFrame (self);
+
 	if (self->linkcount != self->monsterinfo.linkcount)
 	{
 		self->monsterinfo.linkcount = self->linkcount;
@@ -417,24 +439,15 @@ void monster_think (edict_t *self)
 	M_SetEffects (self);
 
 	
-	if(self->posion_time > 0 && self->health >4 && count >= 80)
+	if(self->posion_time > 0 && self->health >4 && count >= 79 && self->Posioned == 0)
 		{
-			//gi.bprintf(PRINT_MEDIUM, "posion: %f\n", self->posion_time);
-			//gi.centerprintf(self, "posioned!");
 			gi.bprintf(PRINT_MEDIUM, "Monster posion: %d\n", (int)self->posion_time);
+			gi.bprintf(PRINT_MEDIUM, "Monster health: %d\n", self->health);
 			self->health -= 3;
 			self->posion_time --;
 			
 		}
-		
-		else if(self->health <=4)
-		{
-			gi.bprintf(PRINT_MEDIUM, "should be dead");
-			//T_Damage(self, self, self, 0,0,0,1,0,DEAD_DEAD,WEAP_BLASTER);
-			//gi.bprintf(PRINT_MEDIUM, "posion: %f\n", self->posion_time);
-			//player_die(self, self, self, 100000, vec3_origin);
-		}
-		else
+	else
 		{
 			self->Posioned == 0;
 		}
@@ -444,31 +457,57 @@ void monster_think (edict_t *self)
 			self->fire_time = 0;
 			self->on_fire == 0;
 		}
-		//gi.cprintf(ent, PRINT_HIGH, "%d\n", ent->fire_time);
-		if(self->fire_time > 0 && self->health >3 && count >=80 )
+		if(self->fire_time > 0 && self->health >3 && count >=80 && self->on_fire == 0)
 		{
-			//gi.bprintf(PRINT_MEDIUM, "fire: %f\n", self->fire_time);
-		
-			//gi.centerprintf(ent, "fire!");
 			self->health -= 3;
 			gi.bprintf(PRINT_MEDIUM, "Monster fire: %d\n", (int)self->fire_time);
 			gi.bprintf(PRINT_MEDIUM, "Monster health: %d\n", self->health);
 			self->fire_time --;
 			
 		}
-		
-		else if(self->health <= 3)
-		{
-			gi.bprintf(PRINT_MEDIUM, "should be dead");
-			//monster_death_use(self);
-			//T_Damage(self, self, self, 0,0,0,1,0,DEAD_DEAD,WEAP_BLASTER);
-			//player_die(ent, ent, ent, 100000, vec3_origin);
-		} 
 		else
 		{
 			self->on_fire == 0;
 		}
-			//ent->on_fire = false;
+		
+		if(self->slow_time > 0)
+		{
+			if(count >= 80)
+			{
+				gi.bprintf(PRINT_MEDIUM, "Monster slowed!\n");
+				self->slow_time --;
+			}
+			self->slowed == 1;
+		}
+		else
+		{
+			self->slowed == 0;
+		}
+		//gi.bprintf(PRINT_MEDIUM, "rooted: %f\n", self->root_time);
+		
+		if(self->root_time > 0)
+		{
+			//gi.bprintf(PRINT_MEDIUM, "rooted: %f\n", self->root_time);
+			if(count >= 80)
+			{
+				gi.bprintf(PRINT_MEDIUM, "disrmaed: %f\n", self->root_time);
+				gi.bprintf(PRINT_MEDIUM, "Monster disarmed!\n");
+				self->root_time --;
+			}
+			self->rooted == 1;
+		}
+		else
+		{
+			self->rooted == 0;
+		}
+
+		if(self->slowed == 1)
+			VectorScale (self->velocity, .75, self->velocity);
+
+		if(self->rooted == 1)
+			VectorScale (self->velocity, 0.25, self->velocity);
+		
+		//VectorScale (self->velocity, .001, self->velocity);
 			
 
 	if(count >80)

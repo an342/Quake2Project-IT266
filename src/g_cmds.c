@@ -821,6 +821,14 @@ void Cmd_skillpoint_f(edict_t *ent)
 		//gi.cprintf (ent, PRINT_HIGH, "\n");
 
 	}
+	else if (Q_stricmp(i, "add9") == 0)
+	{
+		ent->client->pers.skillpoints = ent->client->pers.skillpoints + 9;
+		//sprintf(a,"%d", ent->client->pers.skillpoints);
+		gi.cprintf (ent, PRINT_HIGH, "Skillpoint added \nnew total: %d \n", ent->client->pers.skillpoints);
+		//gi.cprintf (ent, PRINT_HIGH, a);
+		//gi.cprintf (ent, PRINT_HIGH, "\n");
+	}
 	else
 	{
 		gi.cprintf (ent, PRINT_HIGH, "Skillpoints: %d \n", ent->client->pers.skillpoints);
@@ -834,41 +842,41 @@ void Cmd_UpgradeWpn_f(edict_t *ent)
 	char		*name;
 	
 	name = gi.args();
-	if(Q_stricmp(name, "rockets") == 0)
+	if(Q_stricmp(name, "Shotgun") == 0)
 	{
-		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.homing_rockets != 1)
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.shotgun_mode!= 1)
 		{
-			ent->client->pers.homing_rockets = 1;
+			ent->client->pers.shotgun_mode = 1;
 			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
-			gi.cprintf (ent, PRINT_HIGH, "Seeker Rockets Engaged!\n");
+			gi.cprintf (ent, PRINT_HIGH, "This is L I T !\n");
 		}
 	
-		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.homing_rockets != 1)
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.shotgun_mode != 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
-		else if ( ent->client->pers.homing_rockets = 1)
+		else if ( ent->client->pers.shotgun_mode = 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
 	}
-	else if(Q_stricmp(name, "chaingun") == 0)
+	else if(Q_stricmp(name, "supershotgun") == 0)
 	{
-		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.shotgunchaingun!= 1)
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.super_shotgun_mode != 1)
 		{
-			ent->client->pers.shotgunchaingun = 1;
+			ent->client->pers.super_shotgun_mode = 1;
 			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
-			gi.cprintf (ent, PRINT_HIGH, "Shells Spinning UP!\n");
+			gi.cprintf (ent, PRINT_HIGH, "You droped somthing!\n");
 		}
 	
-		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.shotgunchaingun != 1)
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.super_shotgun_mode != 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
-		else if ( ent->client->pers.shotgunchaingun = 1)
+		else if ( ent->client->pers.super_shotgun_mode = 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
@@ -894,31 +902,151 @@ void Cmd_UpgradeWpn_f(edict_t *ent)
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
 	}
-	else if(Q_stricmp(name, "Shotgun") == 0)
+	else if(Q_stricmp(name, "chaingun") == 0)
 	{
-		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.shotgun_mode!= 1)
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.chaingun_mode!= 1)
 		{
-			ent->client->pers.shotgun_mode = 1;
+			ent->client->pers.chaingun_mode = 1;
 			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
-			gi.cprintf (ent, PRINT_HIGH, "Venome added!\n");
+			gi.cprintf (ent, PRINT_HIGH, "Shells spinning UP!\n");
 		}
 	
-		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.shotgun_mode != 1)
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.chaingun_mode != 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
-		else if ( ent->client->pers.shotgun_mode = 1)
+		else if ( ent->client->pers.chaingun_mode = 1)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
 			gi.cprintf (ent, PRINT_HIGH, "failed \n");
 		}
 	}
+	else if(Q_stricmp(name, "grenades") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.grenade_mode!= 1)
+		{
+			ent->client->pers.grenade_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "Can you hit them now?\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.grenade_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.grenade_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "rockets") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.rockets_mode != 1)
+		{
+			ent->client->pers.rockets_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "Seeker Rockets Engaged!\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.rockets_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.rockets_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "hyperblaster") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.hyperblaster_mode!= 1)
+		{
+			ent->client->pers.hyperblaster_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "SPiderr Wuuuuuuuss come out and plaaaaaaaaay!\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.hyperblaster_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.hyperblaster_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "Railgun") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.railgun_mode!= 1)
+		{
+			ent->client->pers.railgun_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "Care to make a donation?\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.railgun_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.railgun_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "BFG") == 0)
+	{
+		if (ent->client->pers.skillpoints >= 1 && ent->client->pers.bfg_mode!= 1)
+		{
+			ent->client->pers.bfg_mode = 1;
+			ent->client->pers.skillpoints = ent->client->pers.skillpoints -1;
+			gi.cprintf (ent, PRINT_HIGH, "BIG F*cking Slow!\n");
+		}
+	
+		else if (ent->client->pers.skillpoints < 1 && ent->client->pers.bfg_mode != 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Not enough skillpoints!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+		else if ( ent->client->pers.bfg_mode = 1)
+		{
+			gi.cprintf (ent, PRINT_HIGH, "Alredy upgraded!\n");
+			gi.cprintf (ent, PRINT_HIGH, "failed \n");
+		}
+	}
+	else if(Q_stricmp(name, "all") == 0)
+	{
+			
+			ent->client->pers.shotgun_mode = 1;
+			ent->client->pers.super_shotgun_mode = 1;
+			ent->client->pers.mg_mode = 1;
+			ent->client->pers.chaingun_mode = 1;
+			ent->client->pers.grenade_mode = 1;
+			ent->client->pers.rockets_mode = 1;
+			ent->client->pers.hyperblaster_mode = 1;
+			ent->client->pers.railgun_mode = 1;
+			ent->client->pers.bfg_mode = 1;
+			
+			gi.cprintf (ent, PRINT_HIGH, "all upgraded\n");
+	}
 	else
 	{
-		gi.cprintf (ent, PRINT_HIGH, "Weapon not added try again \n");
+		gi.cprintf (ent, PRINT_HIGH, "Weapon not recognized try again\n");
 	}
 
+}
+void Cmd_Slow_f(edict_t *ent)
+{
+	ent->slowed = 1;
+	gi.cprintf (ent, PRINT_HIGH, "Slow time:%f\n", ent->slowed);
 }
 /*
 ==================
@@ -1041,33 +1169,6 @@ void Cmd_PlayerList_f(edict_t *ent)
 }
 
 
-/*
-=================
-Cmd_FireMode_f
-MUCE: new function for adjusting firing mode
-=================
-*/
-void Cmd_FireMode_f (edict_t *ent)
-{
-	int i;
-	i=ent->client->pers.fire_mode;
-	
-	switch (i)
-	{
-		case 0:
-			ent->client->pers.fire_mode=1;
-			gi.cprintf(ent,PRINT_HIGH,"Burst Fire Mode\n");
-			break;
-		case 1:
-			default:
-			ent->client->burstfire_count=0;
-			ent->client->pers.fire_mode=0;
-			gi.cprintf(ent,PRINT_HIGH,"Fully Automatic Mode\n");
-			break;
-	}
-}
-
-
 
 /*
 =================
@@ -1154,16 +1255,16 @@ void ClientCommand (edict_t *ent)
 		Cmd_PutAway_f (ent);
 	else if (Q_stricmp (cmd, "wave") == 0)
 		Cmd_Wave_f (ent);
-
 	//new 'skillpoints' cmd
 	else if (Q_stricmp (cmd, "sklpts") == 0)
 		Cmd_skillpoint_f(ent);
+	//upgrade command for mods
 	else if (Q_stricmp (cmd, "upgrade") == 0)
 		Cmd_UpgradeWpn_f(ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
-	else if (Q_stricmp (cmd, "firemode") == 0)
-		Cmd_FireMode_f (ent);
+	else if (Q_stricmp(cmd, "slow") == 0)
+		Cmd_Slow_f(ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

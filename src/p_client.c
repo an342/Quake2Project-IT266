@@ -14,7 +14,7 @@ void SP_misc_teleporter_dest (edict_t *ent);
 // the coop spawn spots on some maps are SNAFU.  There are coop spots
 // with the wrong targetname as well as spots with no name at all
 //
-// we use carnal knowledge of the maps to fix the coop spot targetnames to match
+// we use carnal knowled-ge of the maps to fix the coop spot targetnames to match
 // that of the nearest named single player spot
 
 static void SP_FixCoopSpots (edict_t *self)
@@ -1570,7 +1570,6 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	pmove_t	pm;
 
 	static int count;
-
 	count ++;
 
 	level.current_entity = ent;
@@ -1784,9 +1783,48 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			ent->on_fire = 0;
 		}
 			//ent->on_fire = false;
+		if(ent->healing_time > 0)
+		{
+			if(count >= 100)
+			{
+				gi.centerprintf(ent, "Healing! ");
+				
+				ent->health += 5;
+				//gi.cprintf(ent, PRINT_HIGH, "%f\n", ent->healing_time);
+				ent->healing_time --;
+				ent->on_fire == 0;
+				ent->Posioned == 0;
+			}
+		}
+		else if(ent->health >= ent->max_health)
+		{
+			ent->healing = 1;
+		}
+		else
+		{
+			ent->healing = 0;
+		}
 
+		//gi.cprintf(ent, PRINT_HIGH, "%f\n", ent->slow_time);
+		if(ent->slow_time > 0)
+		{
+			if(count >= 100)
+			{
+				gi.centerprintf(ent, "slowed!");
+				
+				gi.cprintf(ent, PRINT_HIGH, "slow: %d\n", (int)ent->slow_time);
+				ent->slow_time --;
+				//VectorScale (ent->velocity, .25, ent->velocity);
+			}
+			
+			VectorScale (ent->velocity, .25, ent->velocity);
+		}
+		else
+		{
+			ent->slowed == 0;
+		}
 
-	if(count >=100)
+	if(count >100)
 		count=0;
 
 	//gi.cprintf(ent, PRINT_HIGH, "%d\n", pm.waterlevel);
